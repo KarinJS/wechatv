@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/KarinJS/wechatv/compare/v0.2.0...v0.2.1) (2025-07-21)
+
+
+### Bug Fixes
+
+* ci ([96b6782](https://github.com/KarinJS/wechatv/commit/96b678298ebdf338911ba61933d618353c54f0b7))
+
 ## [0.2.0](https://github.com/KarinJS/wechatv/compare/v0.1.0...v0.2.0) (2025-07-21)
 
 
