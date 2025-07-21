@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/KarinJS/wechatv/compare/v0.2.1...v0.2.2) (2025-07-21)
+
+
+### Bug Fixes
+
+* 优化 Windows 平台的发布流程 ([#4](https://github.com/KarinJS/wechatv/issues/4)) ([e121f44](https://github.com/KarinJS/wechatv/commit/e121f44bdeaf94de1943c21003305e869b38dee8))
+
 ## [0.2.1](https://github.com/KarinJS/wechatv/compare/v0.2.0...v0.2.1) (2025-07-21)
 
 
