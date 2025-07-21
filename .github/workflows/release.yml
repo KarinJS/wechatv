@@ -10,21 +10,29 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+
 jobs:
   # 设置 release-please 任务
-  release-please:
+  release:
     # 设置任务运行环境为 windows-latest
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release-please.outputs.releases_created }}
+      tag_name: ${{ steps.release-please.outputs.tag_name }}
     steps:
       # 使用 release-please-action 动作来自动创建发布 PR
       - uses: googleapis/release-please-action@v4
-        id: release
+        id: release-please
         with:
           release-type: rust
-          package-name: wechatv
-      # 检出代码
-      - uses: actions/checkout@v4
-        if: ${{ steps.release.outputs.release_created }}
+  build:
+    needs: release
+    if: needs.release.outputs.release_created == 'true'
+    runs-on: windows-latest
+    steps:
+      # 检出代
+      - name: 检出代码
+        uses: actions/checkout@v4
       
       - name: 安装 Rust
         uses: actions-rs/toolchain@v1
@@ -32,27 +40,37 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
-        if: ${{ steps.release.outputs.release_created }}            
+
       - name: 构建发布版本
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release
-        if: ${{ steps.release.outputs.release_created }}
-      - name: 创建发布包
-        run: |
-          mkdir release
-          copy target\release\wechatv.exe release\
-          if exist README.md copy README.md release\
-          cd release
-          7z a -tzip wechatv-${{ steps.release.outputs.tag_name }}-windows-x64.zip *
-        if: ${{ steps.release.outputs.release_created }}
-          
-      - name: 上传发布包到 Release
-        uses: softprops/action-gh-release@v1
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
         with:
-          files: release/wechatv-${{ steps.release.outputs.tag_name }}-windows-x64.zip
-          tag_name: ${{ steps.release.outputs.tag_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-        if: ${{ steps.release.outputs.release_created }}
+          name: wechatv-windows-x64
+          path: target/release/wechatv.exe
+  
+  publish:
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 导入构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: wechatv-windows-x64
+          path: ./
+
+      - name: 压缩文件
+        uses: vimtor/action-zip@v1.2
+        with:
+          files: wechatv.exe
+          dest: wechatv-windows-x64.zip
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: wechatv-windows-x64.zip
+          tag_name: ${{ needs.release.outputs.tag_name }}
